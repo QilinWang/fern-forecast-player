@@ -1,0 +1,204 @@
+<!doctype html>
+<html lang="en" data-theme="dark">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <meta name="theme-color" content="#080e16" />
+    <meta
+      name="description"
+      content="Explore saved Fern predictions on Lorenz-63: truth, point forecast, and 32 predictive samples."
+    />
+    <title>Fern · See a forecast unfold</title>
+    <link rel="stylesheet" href="./style.css" />
+  </head>
+  <body>
+    <header class="topbar wrap">
+      <a
+        class="brand"
+        href="https://fern-forecasting.netlify.app/"
+        target="_blank"
+        rel="noreferrer"
+        ><span class="brand-mark">✳</span> FERN
+        <span class="brand-sub">/ FORECAST LAB</span></a
+      >
+      <nav aria-label="Project links">
+        <a
+          href="https://proceedings.mlr.press/v306/wang26ax.html"
+          target="_blank"
+          rel="noreferrer"
+          >Paper ↗</a
+        ><a
+          href="https://github.com/QilinWang/Fern-icml2026"
+          target="_blank"
+          rel="noreferrer"
+          >GitHub ↗</a
+        ><a
+          href="https://fern-forecasting.netlify.app/"
+          target="_blank"
+          rel="noreferrer"
+          >Website ↗</a
+        >
+      </nav>
+    </header>
+    <main class="wrap">
+      <section class="intro">
+        <div>
+          <div class="eyebrow">
+            <span class="live-dot"></span> SAVED MODEL OUTPUT · LORENZ-63
+          </div>
+          <h1>See a forecast <em>unfold.</em></h1>
+          <p class="lede">
+            One chaotic system. <strong>32 possible futures.</strong
+            ><br />Explore how a real Fern forecast meets what actually
+            happened.
+          </p>
+        </div>
+        <aside class="meta">
+          <span>AN INTERACTIVE RESEARCH STORY</span
+          ><strong>192 <small>steps ahead</small></strong>
+          <p>By Qilin Wang<br />Single-author ICML 2026 research</p>
+        </aside>
+      </section>
+      <section class="viewer" aria-label="Interactive Fern forecast">
+        <div class="viewer-top">
+          <div>
+            <span class="viewer-label"
+              >01 / NLL + HUBER FERN · NOT THE ICML MODEL</span
+            ><span class="viewer-title">A window into chaos</span>
+          </div>
+          <div class="viewer-hint">DRAG TO ROTATE · SCROLL TO ZOOM</div>
+        </div>
+        <div class="stage">
+          <canvas
+            id="forecast"
+            aria-label="Interactive three-dimensional visualization of the saved Lorenz-63 forecast and true trajectory"
+          ></canvas>
+          <div class="stage-status" id="status" role="status">
+            Loading saved forecast…
+          </div>
+          <div class="legend">
+            <span><i class="truth"></i>Ground truth</span
+            ><span><i class="point"></i>Point forecast</span
+            ><span><i class="samples"></i>32 sample paths</span>
+          </div>
+        </div>
+        <div class="controls">
+          <label class="window-control"
+            >TEST WINDOW
+            <select id="window">
+              <option value="0">01 · First</option>
+              <option value="1" selected>02 · Middle</option>
+              <option value="2">03 · Last</option>
+            </select></label
+          ><button
+            id="play"
+            type="button"
+            data-pause="❚❚ Pause"
+            data-play="▶ Play"
+            disabled
+          >
+            ▶ Play
+          </button>
+          <div class="timeline">
+            <div class="timeline-label">
+              <span>FORECAST STEP</span><strong id="step">—</strong>
+            </div>
+            <input
+              id="slider"
+              type="range"
+              min="0"
+              max="191"
+              value="0"
+              aria-label="Forecast step"
+              disabled
+            />
+          </div>
+        </div>
+        <div class="player-tools" aria-label="Playback controls">
+          <button
+            id="previous"
+            type="button"
+            aria-label="Previous forecast step"
+          >
+            −1
+          </button>
+          <button id="next" type="button" aria-label="Next forecast step">
+            +1
+          </button>
+          <button id="restart" type="button">Restart</button>
+          <button id="peak" type="button">Peak error</button>
+          <label
+            >Speed
+            <select id="speed">
+              <option value="0.5">0.5×</option>
+              <option value="1" selected>1×</option>
+              <option value="2">2×</option>
+            </select></label
+          >
+          <label
+            ><input type="checkbox" id="full-paths" /> Show full paths</label
+          >
+        </div>
+        <p class="readout">
+          Point error <strong id="error">—</strong>
+          <span>Euclidean distance in raw Lorenz units</span>
+        </p>
+        <p class="readout">
+          The orange and cyan markers, sample cloud, and ellipsoid all show the
+          selected step. Full paths add context from other steps.
+        </p>
+      </section>
+      <section class="story">
+        <div class="story-head">
+          <span class="eyebrow">WHAT YOU'RE SEEING</span>
+          <h2>Forecasts have<br /><em>geometry.</em></h2>
+        </div>
+        <div class="story-copy">
+          <p>
+            The bright line is Fern’s point forecast; the orange line is the
+            true Lorenz trajectory. The blue threads are
+            <strong>32 saved samples</strong> from its predictive distribution.
+          </p>
+          <p>
+            At the selected step, the wire ellipsoid shows the 90% region of a
+            Gaussian fitted to those samples; it is not a measured coverage
+            guarantee. The three coordinates are forecast separately and paired
+            by sample index; the resulting 3D paths are not a jointly trained
+            physical simulation.
+          </p>
+          <div class="notice">
+            This is a likelihood-trained <strong>NLL + Huber</strong> Fern
+            variant, distinct from the point-forecasting model in the ICML
+            paper. These are saved predictions, not live inference.
+          </div>
+        </div>
+      </section>
+      <section class="links">
+        <a
+          href="https://proceedings.mlr.press/v306/wang26ax.html"
+          target="_blank"
+          rel="noreferrer"
+          ><span>01 / RESEARCH</span><strong>Read the ICML paper ↗</strong></a
+        ><a
+          href="https://arxiv.org/abs/2603.22219"
+          target="_blank"
+          rel="noreferrer"
+          ><span>02 / PROBABILITY</span
+          ><strong>Explore Noise Titration ↗</strong></a
+        ><a
+          href="https://github.com/QilinWang/Fern-icml2026"
+          target="_blank"
+          rel="noreferrer"
+          ><span>03 / SOURCE</span><strong>Browse the paper code ↗</strong></a
+        >
+      </section>
+    </main>
+    <footer class="wrap">
+      FERN <span>Research by Qilin Wang · Built with AI assistance</span
+      ><a href="https://fern-forecasting.netlify.app/"
+        >Explore the full website ↗</a
+      >
+    </footer>
+    <script type="module" src="./app.js"></script>
+  </body>
+</html>
