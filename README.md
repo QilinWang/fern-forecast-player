@@ -1,5 +1,6 @@
 # Fern Forecast Player
 
+[Open the live forecast player](https://fern-forecast-player.netlify.app/).
 Play saved Fern forecasts on Lorenz-63. Switch between three retained test windows, step through 192 predictions, and compare the point forecast and 32 predictive samples with the true simulated trajectory.
 
 The current-step wire ellipsoid is the 90% region of a Gaussian fitted to those 32 samples. It is a visualization of sample spread. The point error is the Euclidean distance between the saved point forecast and the simulated truth in raw Lorenz units. The middle window peaks at step 34 (19.33 units).
