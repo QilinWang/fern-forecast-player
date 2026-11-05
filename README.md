@@ -14,6 +14,7 @@ Netlify serves `public/`. The TypeScript sources are in `src/`; `npm install` an
 ## Research explorer
 
 - [Four training settings × two seeds](https://fern-forecast-player.netlify.app/compare/). Synchronize the same Lorenz window across Huber, NLL + Huber, NLL and soft-clip NLL, with 32 retained trajectories per run, a shared three-dimensional view and event jumps.
+- [Start with the reading guide](https://fern-forecast-player.netlify.app/compare/#guide). Separate the truth and center lines, inspect the model's interval endpoints, then jump to three real moments. The Huber h46 example shows why a close center can still miss an extremely narrow interval.
 - [Gaussian injection](https://fern-forecast-player.netlify.app/injection/). Compare two Rössler windows in raw and truth-whitened coordinates, using saved scores, reconstructed noisy targets and fixed-checkpoint samples.
 - [Radial, angular and Student-W](https://fern-forecast-player.netlify.app/shape/). Inspect saved paired-seed scores and degrees-of-freedom readouts.
 
@@ -24,3 +25,5 @@ The Gaussian explorer uses Rössler x, Gaussian RMS 0.5, 192-step futures and 3,
 Qilin developed the Fern models and directed the research questions and scientific settings. AI coding agents implemented the visualization and publication adaptation, with numerical and browser checks against the saved artifacts.
 
 The six exported JSON payloads total approximately 4 MB and are served in the static snapshot. public/release.json lists their exact sizes and SHA-256 digests. The browser fetches relative data URLs, so a later R2/B2 origin can be added through routing without changing the forecasting computations. The public export contains only the display code and selected results.
+
+[B2 / R2 setup, step by step](docs/storage-setup.md) explains public delivery, browser access and how the static frontend can grow.

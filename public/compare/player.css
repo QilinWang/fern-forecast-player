@@ -123,14 +123,14 @@ dd {
 }
 .matrix {
   display: grid;
-  grid-template-columns: repeat(4, minmax(0, 1fr));
-  gap: 0.65rem;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 1.2rem;
 }
 article {
   min-width: 0;
   border: 1px solid var(--edge);
   border-radius: 10px;
-  padding: 0.6rem;
+  padding: 1rem;
   background: #0e242c;
 }
 h2 {
@@ -138,7 +138,7 @@ h2 {
   margin: 0.12rem 0 0.4rem;
 }
 .run {
-  padding: 0.4rem 0;
+  padding: 0.8rem 0;
 }
 .run + .run {
   border-top: 1px solid var(--edge);
@@ -151,7 +151,7 @@ h2 {
 }
 .run h3 {
   margin: 0;
-  font-size: 0.79rem;
+  font-size: 0.9rem;
   font-variant-numeric: tabular-nums;
 }
 .run svg {
@@ -165,20 +165,22 @@ h2 {
   display: grid;
   grid-template-columns: repeat(2, minmax(0, 1fr));
   margin: 0;
-  gap: 0.18rem 0.45rem;
+  gap: 0.6rem 0.8rem;
 }
 .run dt {
-  font-size: 0.72rem;
+  font-size: 0.82rem;
   color: var(--muted);
 }
 .run dd {
   margin: 0;
-  font-size: 0.95rem;
+  font-size: 1.05rem;
 }
-.run .hit {
+.run .hit,
+#focus-readouts .hit {
   color: var(--mint);
 }
-.run .miss {
+.run .miss,
+#focus-readouts .miss {
   color: var(--gold);
 }
 details {
@@ -241,8 +243,143 @@ summary {
 #matrix {
   scroll-margin-top: 210px;
 }
+.guide {
+  --series: #8af0d0;
+  margin: 1.6rem 0 1rem;
+  padding: clamp(16px, 2.3vw, 30px);
+  border: 1px solid #41626c;
+  border-radius: 14px;
+  background: #10252e;
+}
+.guide-heading {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  flex-wrap: wrap;
+  gap: 0.6rem;
+}
+.guide h2,
+.matrix-title {
+  font-size: 1.3rem;
+}
+.guide-tabs {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.5rem;
+  margin: 1.2rem 0;
+}
+.guide-tabs [aria-selected="true"] {
+  background: #8af0d0;
+  color: #09151c;
+  border-color: #8af0d0;
+}
+.guide-body {
+  display: grid;
+  grid-template-columns: minmax(250px, 0.8fr) minmax(0, 1.2fr);
+  align-items: start;
+  gap: clamp(18px, 3vw, 40px);
+}
+.guide h3 {
+  font-size: 1.1rem;
+  margin: 0.2rem 0 0.8rem;
+}
+.guide p {
+  line-height: 1.7;
+}
+[role="tabpanel"]:focus-visible {
+  outline: 2px solid var(--gold);
+}
+#guide-examples {
+  margin-top: 1.3rem;
+  padding: 0.75rem;
+}
+#guide-examples legend {
+  color: var(--muted);
+}
+#guide-examples button {
+  display: block;
+  width: 100%;
+  text-align: left;
+  margin: 0.4rem 0;
+  padding: 0.6rem;
+}
+.focus-view select {
+  display: block;
+  width: 100%;
+  margin: 0.5rem 0 0.8rem;
+}
+.plot-legend {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.5rem 1rem;
+  margin: 0.8rem 0;
+  font-size: 0.88rem;
+}
+.plot-legend label {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.35rem;
+  cursor: pointer;
+}
+.plot-legend input {
+  accent-color: var(--mint);
+}
+.swatch {
+  width: 20px;
+  border-top: 2px solid;
+}
+.truth-swatch {
+  color: #f1f6f5;
+}
+.center-swatch {
+  color: var(--series);
+  border-top-style: dashed;
+}
+.band-swatch {
+  height: 10px;
+  background: var(--series);
+  border: 0;
+  opacity: 0.45;
+}
+#focus-plot {
+  display: block;
+  width: 100%;
+  border-radius: 7px;
+  background: #091b23;
+}
+#focus-readouts {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 0.7rem 1.2rem;
+  margin-bottom: 0;
+}
+#focus-readouts dt {
+  color: var(--muted);
+  font-size: 0.85rem;
+}
+#focus-readouts dd {
+  margin: 0.2rem 0 0;
+  font-size: 1.05rem;
+  overflow-wrap: anywhere;
+}
+.focus-note {
+  font-size: 0.88rem;
+  border-left: 2px solid var(--gold);
+  padding-left: 0.8rem;
+}
+.matrix-title {
+  margin-top: 1.8rem;
+}
+@media (max-width: 1000px) {
+  .guide-body {
+    grid-template-columns: 1fr;
+  }
+}
 @media (max-width: 700px) {
   #sample-panels {
+    grid-template-columns: 1fr;
+  }
+  .matrix {
     grid-template-columns: 1fr;
   }
 }

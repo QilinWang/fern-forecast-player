@@ -22,10 +22,6 @@
         ><a href="/shape/">Radial / angular / Student-W</a>
       </nav>
 
-      <nav>
-        <a href="/">← 原始预测播放器</a>
-        <a href="/injection/">Gaussian 注射图谱 ↗</a>
-      </nav>
       <header>
         <p class="tag">FERN RESEARCH EXPLORER · LORENZ‑63 · TEST (0, 1608)</p>
         <h1>同一段 Lorenz，两种 seed</h1>
@@ -34,6 +30,192 @@
           90% 区间。
         </p>
       </header>
+      <section id="guide" class="guide" aria-labelledby="guide-title">
+        <div class="guide-heading">
+          <h2 id="guide-title">先读懂一张图，再比较八条预测</h2>
+          <a href="#controls">直接开始播放 ↓</a>
+        </div>
+        <div role="tablist" aria-label="播放器入门" class="guide-tabs">
+          <button
+            id="tab-lines"
+            role="tab"
+            aria-selected="true"
+            aria-controls="guide-lines"
+            type="button"
+          >
+            ① 两条线
+          </button>
+          <button
+            id="tab-step"
+            role="tab"
+            aria-selected="false"
+            aria-controls="guide-step"
+            tabindex="-1"
+            type="button"
+          >
+            ② 游标和圆圈
+          </button>
+          <button
+            id="tab-band"
+            role="tab"
+            aria-selected="false"
+            aria-controls="guide-band"
+            tabindex="-1"
+            type="button"
+          >
+            ③ 区间和样本
+          </button>
+          <button
+            id="tab-cases"
+            role="tab"
+            aria-selected="false"
+            aria-controls="guide-cases"
+            tabindex="-1"
+            type="button"
+          >
+            ④ 看真实时刻
+          </button>
+        </div>
+        <div class="guide-body">
+          <div>
+            <div
+              id="guide-lines"
+              role="tabpanel"
+              aria-labelledby="tab-lines"
+              tabindex="0"
+            >
+              <h3>你看到的确实是两条叠在一起的线</h3>
+              <p>
+                白色实线是这次预测对应的真实未来，彩色虚线是模型的预测中心。每张图都画完整的
+                192 步；播放时，游标在这张图上移动。
+              </p>
+              <p>
+                两条线贴近，表示这个坐标的中心预测接近真值。可以在右侧分别关掉一条线，看看它们各自的形状。
+              </p>
+            </div>
+            <div
+              id="guide-step"
+              role="tabpanel"
+              aria-labelledby="tab-step"
+              tabindex="0"
+              hidden
+            >
+              <h3>竖线是播放位置，空心圆是真值</h3>
+              <p>
+                金色竖线标记当前第几步。彩色实心点是该步的预测中心，空心圆在该步真值上。
+              </p>
+              <p>
+                空心圆变橙色，表示这个坐标的真值在模型区间外；绿色表示在带内。下方文字也会显示“在带外
+                / 在带内”。浅橙色底纹另指定位器选中的事件片段。
+              </p>
+            </div>
+            <div
+              id="guide-band"
+              role="tabpanel"
+              aria-labelledby="tab-band"
+              tabindex="0"
+              hidden
+            >
+              <h3>中心、宽度、覆盖，要一起看</h3>
+              <p>
+                阴影是各预测步的解析 Gaussian 边际 90% 区间，不是 32
+                条样本的最大最小值，也不是整条轨迹有 90% 的覆盖保证。
+              </p>
+              <p>
+                Huber
+                只训练中心，尺度头未拟合；它的带窄到几乎看不见，不能当作校准好的置信度。三维面板则展示真实保存的
+                32 条样本，按当前 x 的正负着色。跨过 x=0
+                本身不能证明出现两个模态。
+              </p>
+            </div>
+            <div
+              id="guide-cases"
+              role="tabpanel"
+              aria-labelledby="tab-cases"
+              tabindex="0"
+              hidden
+            >
+              <h3>从一个异常时刻，往前后追</h3>
+              <p>
+                Huber 第 46 步：中心贴近，但区间漏掉真值。NLL＋Huber 第 35
+                步：第二个 seed 的三维中心误差最大。第 64 步：第一个 seed
+                的中心还在负侧，真值已到正侧。
+              </p>
+              <p>
+                点击下面的例子会切换右图、x
+                坐标和共享时间游标，并选择下方三维面板的训练设置。三维面板始终保留两个
+                seed。再点“播放峰值前后 8 步”，观察它是怎样走偏的。
+              </p>
+            </div>
+            <fieldset id="guide-examples" disabled>
+              <legend>用已有结果试一下</legend>
+              <button
+                type="button"
+                data-guide-model="0"
+                data-guide-seed="0"
+                data-guide-step="46"
+              >
+                Huber · h46 · 线贴近，带却漏掉
+              </button>
+              <button
+                type="button"
+                data-guide-model="1"
+                data-guide-seed="1"
+                data-guide-step="35"
+              >
+                NLL＋Huber · h35 · 最大三维误差
+              </button>
+              <button
+                type="button"
+                data-guide-model="1"
+                data-guide-seed="0"
+                data-guide-step="64"
+              >
+                NLL＋Huber · h64 · 中心与真值异侧
+              </button>
+            </fieldset>
+            <p id="guide-samples-state" class="muted" role="status">
+              三维样本读取中；示例可先操作解析中心和区间，样本就绪后会同步。
+            </p>
+          </div>
+          <div class="focus-view">
+            <label for="focus-run">放大看一条预测</label>
+            <select id="focus-run" disabled></select>
+            <div class="plot-legend" aria-label="放大图显示内容">
+              <label
+                ><input id="show-truth" type="checkbox" checked /><span
+                  class="swatch truth-swatch"
+                ></span
+                >真值 · 实线</label
+              >
+              <label
+                ><input id="show-center" type="checkbox" checked /><span
+                  class="swatch center-swatch"
+                ></span
+                >预测中心 · 虚线</label
+              >
+              <label
+                ><input id="show-band" type="checkbox" checked /><span
+                  class="swatch band-swatch"
+                ></span
+                >模型 90% 带</label
+              >
+            </div>
+            <svg
+              id="focus-plot"
+              viewBox="0 0 320 112"
+              role="img"
+              aria-label="放大的预测中心、真值与模型区间"
+            ></svg>
+            <p id="focus-caption" class="muted">
+              横轴：预测步
+              1–192。纵轴：所选坐标的原始单位，与下面八张图共用尺度。
+            </p>
+            <dl id="focus-readouts" aria-live="off"></dl>
+            <p id="focus-note" class="focus-note"></p>
+          </div>
+        </div>
+      </section>
       <section class="transport" aria-label="同步播放控制">
         <fieldset id="controls" disabled>
           <div class="controls">
@@ -96,6 +278,10 @@
         <div id="sample-panels"></div>
         <p class="muted"><a href="#matrix">跳到解析中心、区间与误差 ↘</a></p>
       </section>
+      <h2 class="matrix-title">四种训练 × 两个 seed · 同一真值，同一纵轴</h2>
+      <p class="muted">
+        每种训练独占一张大卡；两条 seed 预测都保留。中心用虚线，真值用实线。
+      </p>
       <div id="matrix" class="matrix"></div>
       <details>
         <summary>事件与指标怎么读</summary>

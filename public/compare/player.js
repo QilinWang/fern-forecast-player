@@ -21,6 +21,35 @@ const vectors = (values, valid = Number.isFinite) =>
     (row) => Array.isArray(row) && row.length === 3 && row.every(valid),
   );
 
+const tabs = [...document.querySelectorAll('[role="tab"]')];
+function showTab(tab) {
+  for (const item of tabs) {
+    const selected = item === tab;
+    item.setAttribute("aria-selected", String(selected));
+    item.tabIndex = selected ? 0 : -1;
+    field(item.getAttribute("aria-controls")).hidden = !selected;
+  }
+}
+for (const [index, tab] of tabs.entries()) {
+  tab.addEventListener("click", () => showTab(tab));
+  tab.addEventListener("keydown", (event) => {
+    const target =
+      event.key === "ArrowRight"
+        ? (index + 1) % tabs.length
+        : event.key === "ArrowLeft"
+          ? (index + tabs.length - 1) % tabs.length
+          : event.key === "Home"
+            ? 0
+            : event.key === "End"
+              ? tabs.length - 1
+              : undefined;
+    if (target === undefined) return;
+    event.preventDefault();
+    showTab(tabs[target]);
+    tabs[target].focus();
+  });
+}
+
 try {
   const response = await fetch("./data.json");
   if (!response.ok) throw new Error(`HTTP ${response.status}`);
@@ -84,6 +113,39 @@ try {
     }
     field("matrix").append(article);
   }
+  const focusRun = field("focus-run");
+  for (const card of cards) {
+    focusRun.add(
+      new Option(
+        `${data.models[card.model].label} · seed ${data.seeds[card.seed]}`,
+      ),
+    );
+  }
+  field("focus-readouts").innerHTML = [
+    ["truth", "当前真值"],
+    ["center", "预测中心"],
+    ["error", "中心绝对误差"],
+    ["width", "模型 90% 带宽"],
+    ["lo", "区间下端点"],
+    ["hi", "区间上端点"],
+    ["coverage", "当前坐标覆盖"],
+    ["side", "中心 x 与真值 x"],
+  ]
+    .map(
+      ([name, label]) =>
+        `<div><dt>${label}</dt><dd data-field="${name}"></dd></div>`,
+    )
+    .join("");
+  const focus = {
+    ...cards[0],
+    plot: field("focus-plot"),
+    readouts: Object.fromEntries(
+      [...field("focus-readouts").querySelectorAll("[data-field]")].map(
+        (element) => [element.dataset.field, element],
+      ),
+    ),
+  };
+  const allCards = () => [...cards, focus];
   for (const e of events) {
     const span =
       e.start === e.end ? `h${e.start + 1}` : `h${e.start + 1}–${e.end + 1}`;
@@ -103,7 +165,17 @@ try {
   let y;
   let samples;
   let replayAnchor;
+  let pendingSampleModel;
   const chooseAxis = () => axis.selectedIndex;
+  function applyLayers() {
+    for (const name of ["truth", "center", "band"]) {
+      for (const element of focus.plot.querySelectorAll(
+        `[data-layer="${name}"]`,
+      )) {
+        element.style.display = field(`show-${name}`).checked ? "" : "none";
+      }
+    }
+  }
   function drawPlots() {
     const c = chooseAxis();
     const bounds = cards.flatMap(({ series }) =>
@@ -128,7 +200,7 @@ try {
       <text x="${left - 4}" y="${y(value) + 3}" text-anchor="end" fill="#aac0c5" font-size="9">${value.toFixed(1)}</text>`,
       )
       .join("");
-    for (const card of cards) {
+    for (const card of allCards()) {
       const values = card.series.map(({ axes }) => axes[c]);
       const band = [
         ...path(values.map((v) => v.lo)),
@@ -141,12 +213,12 @@ try {
           ? `<rect x="${x(event.start) - 1}" y="${top}" width="${Math.max(2, x(event.end) - x(event.start) + 2)}" height="${bottom - top}" fill="#ffb971" opacity=".19"/>`
           : "";
       card.plot.innerHTML = `${ticks}${highlight}
-        <polygon points="${band}" fill="${color}" opacity=".23"/>
-        <polyline points="${path(values.map((v) => v.truth)).join(" ")}" fill="none" stroke="#f1f6f5" stroke-width="1.4"/>
-        <polyline points="${path(values.map((v) => v.center)).join(" ")}" fill="none" stroke="${color}" stroke-width="1.55"/>
+        <polygon data-layer="band" points="${band}" fill="${color}" opacity=".23"/>
+        <polyline data-layer="truth" points="${path(values.map((v) => v.truth)).join(" ")}" fill="none" stroke="#f1f6f5" stroke-width="1.4"/>
+        <polyline data-layer="center" points="${path(values.map((v) => v.center)).join(" ")}" fill="none" stroke="${color}" stroke-width="1.55" stroke-dasharray="4 2"/>
         <line data-mark="cursor" y1="${top}" y2="${bottom}" stroke="#ffb971" stroke-width="1.3"/>
-        <circle data-mark="center" r="2.6" fill="${color}"/>
-        <circle data-mark="truth" r="3.8" fill="#091b23" stroke-width="1.7"/>
+        <circle data-layer="center" data-mark="center" r="2.6" fill="${color}"/>
+        <circle data-layer="truth" data-mark="truth" r="3.8" fill="#091b23" stroke-width="1.7"/>
         <text x="${left}" y="106" fill="#aac0c5" font-size="9">1</text>
         <text x="${right}" y="106" text-anchor="end" fill="#aac0c5" font-size="9">192</text>`;
       card.marks = Object.fromEntries(
@@ -156,6 +228,10 @@ try {
         ]),
       );
     }
+    focus.plot.style.setProperty("--series", colors[focus.seed]);
+    field("focus-caption").textContent =
+      `横轴：预测步 1–192；纵轴：${axis.value} 原始单位。与下面八张图共用尺度。金色竖线是播放位置。`;
+    applyLayers();
   }
 
   function render() {
@@ -164,7 +240,7 @@ try {
     field("cursor").textContent = `${step + 1} / ${horizon}`;
     field("current-truth").textContent =
       `h${step + 1} · 真值 ${axis.value} = ${format(data.truth[step][coordinate])} · 原始单位`;
-    for (const card of cards) {
+    for (const card of allCards()) {
       const frame = card.series[step];
       const values = frame.axes[coordinate];
       const { readouts, marks } = card;
@@ -173,10 +249,17 @@ try {
         error: values.error,
         width: values.width,
         xyz: frame.error,
+        truth: values.truth,
+        lo: values.lo,
+        hi: values.hi,
       })) {
-        readouts[name].textContent = format(value);
+        if (readouts[name])
+          readouts[name].textContent =
+            name === "lo" || name === "hi"
+              ? value.toPrecision(8)
+              : format(value);
       }
-      readouts.step.textContent = `h${step + 1}`;
+      if (readouts.step) readouts.step.textContent = `h${step + 1}`;
       readouts.coverage.textContent = values.covered ? "在带内" : "在带外";
       readouts.coverage.className = values.covered ? "hit" : "miss";
       const side =
@@ -193,7 +276,13 @@ try {
         "stroke",
         values.covered ? "#8af0d0" : "#ffb971",
       );
+      card.plot.setAttribute(
+        "aria-label",
+        `${data.models[card.model].label}，seed ${data.seeds[card.seed]}，${axis.value} 的完整 192 步真值与预测；当前 h${step + 1}，真值${values.covered ? "在带内" : "在带外"}`,
+      );
     }
+    field("focus-note").textContent =
+      `h${step + 1} · ${data.models[focus.model].label} · seed ${data.seeds[focus.seed]}。${focus.model === 0 ? "Huber 尺度头未拟合：细带不能解释为校准好的置信度，端点和带宽以数字为准。" : "带内 / 带外只描述此步、此坐标；覆盖与带宽需要一起看。"}`;
     samples?.render(step);
   }
   function stop() {
@@ -233,6 +322,42 @@ try {
     field("event-detail").textContent = detail;
     drawPlots();
     seek(event.peak + 1);
+  }
+  function chooseFocus(index) {
+    focusRun.selectedIndex = index;
+    const { model, seed, series } = cards[index];
+    Object.assign(focus, { model, seed, series });
+    field("guide").style.setProperty("--series", colors[seed]);
+    drawPlots();
+    render();
+  }
+  focusRun.addEventListener("change", () =>
+    chooseFocus(focusRun.selectedIndex),
+  );
+  for (const name of ["truth", "center", "band"]) {
+    field(`show-${name}`).addEventListener("change", applyLayers);
+  }
+  for (const button of document.querySelectorAll("[data-guide-step]")) {
+    button.addEventListener("click", () => {
+      stop();
+      axis.selectedIndex = 0;
+      replayAnchor = Number(button.dataset.guideStep);
+      eventSelect.selectedIndex = -1;
+      const model = Number(button.dataset.guideModel);
+      const seed = Number(button.dataset.guideSeed);
+      pendingSampleModel = data.models[model].id;
+      if (samples) {
+        field("sample-model").value = pendingSampleModel;
+        field("sample-model").dispatchEvent(new Event("change"));
+      }
+      for (const name of ["truth", "center", "band"])
+        field(`show-${name}`).checked = true;
+      field("event-detail").textContent =
+        `导览示例 · ${data.models[model].label} · seed ${data.seeds[seed]} · h${replayAnchor}；下方三维面板保留两个 seed`;
+      chooseFocus(model * data.seeds.length + seed);
+      seek(replayAnchor);
+      showTab(field("tab-cases"));
+    });
   }
   axis.addEventListener("change", () => {
     drawPlots();
@@ -281,16 +406,28 @@ try {
   });
   select(0);
   field("controls").disabled = false;
+  focusRun.disabled = false;
+  field("guide-examples").disabled = false;
   field("status").textContent =
     `同窗 192 步 · 4 种训练 × 2 个 seed · ${splits.length} 个跨 seed 分侧片段 · ${errors.length} 个三维误差峰值`;
   loadSampleView(data)
     .then((view) => {
       samples = view;
+      if (pendingSampleModel) {
+        field("sample-model").value = pendingSampleModel;
+        field("sample-model").dispatchEvent(new Event("change"));
+      }
       samples.render(Number(cursor.value) - 1);
+      field("guide-samples-state").textContent =
+        "32 条样本已就绪；导览示例会同步下方三维面板的训练设置，两个 seed 都保留。";
     })
     .catch((error) => {
       field("sample-status").textContent = `无法读取样本：${error.message}`;
+      field("guide-samples-state").textContent =
+        "三维样本未能加载，示例仍可操作解析中心、区间和共享游标；刷新后可重试样本。";
     });
 } catch (error) {
   field("status").textContent = `无法读取公开预测：${error.message}`;
+  field("guide-samples-state").textContent =
+    "预测数据未能加载，示例与播放器暂不可用；导览说明仍可切换，刷新后可重试。";
 }
