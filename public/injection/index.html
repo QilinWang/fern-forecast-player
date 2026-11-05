@@ -1,0 +1,290 @@
+<!doctype html>
+<html lang="zh-Hans">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>Fern · Gaussian 注射真值</title>
+    <style>
+      :root {
+        color-scheme: dark;
+        font-family: system-ui, sans-serif;
+        background: #09151c;
+        color: #e7f1ef;
+        --mint: #8af0d0;
+        --sub: #a9c1c5;
+      }
+      body {
+        margin: 0;
+      }
+      main {
+        width: min(1080px, calc(100% - 32px));
+        margin: auto;
+        padding: 40px 0;
+      }
+      h1 {
+        font-size: clamp(36px, 6vw, 69px);
+        margin: 0.22em 0;
+      }
+      .tag,
+      a {
+        color: var(--mint);
+      }
+      p {
+        color: var(--sub);
+        line-height: 1.62;
+      }
+      .controls {
+        display: flex;
+        gap: 12px;
+        flex-wrap: wrap;
+        margin: 20px 0;
+      }
+      select {
+        background: #173440;
+        color: #fff;
+        padding: 0.5rem;
+        border: 1px solid #496773;
+        border-radius: 6px;
+      }
+      .panels {
+        display: grid;
+        grid-template-columns: repeat(2, minmax(0, 1fr));
+        gap: 14px;
+      }
+      article {
+        border: 1px solid #2c454e;
+        background: #0e222c;
+        border-radius: 10px;
+        padding: 18px;
+        min-width: 0;
+      }
+      svg {
+        display: block;
+        width: 100%;
+        max-height: 420px;
+      }
+      output {
+        color: var(--mint);
+        font-variant-numeric: tabular-nums;
+      }
+      summary {
+        color: var(--mint);
+        cursor: pointer;
+      }
+      code {
+        overflow-wrap: anywhere;
+      }
+      .replay-key[aria-pressed="true"] {
+        color: #09151c;
+        background: var(--mint);
+      }
+      @media (max-width: 670px) {
+        .panels {
+          grid-template-columns: 1fr;
+        }
+      }
+    </style>
+  </head>
+  <body>
+    <main>
+      <nav
+        style="
+          display: flex;
+          gap: 1rem;
+          flex-wrap: wrap;
+          margin-bottom: 1rem;
+          font: 600 14px system-ui;
+        "
+      >
+        <a href="/">Forecast player</a><a href="/compare/">Seed comparison</a
+        ><a href="/injection/">Gaussian injection</a
+        ><a href="/shape/">Radial / angular / Student-W</a>
+      </nav>
+
+      <a href="/">← 原始预测播放器</a>
+      <a href="/compare/">Lorenz 四训练 × 双 seed ↗</a>
+      <p class="tag">FERN EXPLORER / KNOWN GAUSSIAN INJECTION</p>
+      <h1>注射后，云是什么形状？</h1>
+      <p>
+        Rössler x 的干净未来是中心。注入噪声后，选择两个未来步，从 192 维
+        Gaussian 中读出对应的二维边际。小点标记干净未来的零残差。
+      </p>
+      <div class="controls">
+        <label
+          >噪声 RMS
+          <select id="dose">
+            <option value="0">0.1</option>
+            <option value="1" selected>0.5</option>
+            <option value="2">1.0</option>
+          </select></label
+        ><label
+          >预测步对
+          <select id="pair">
+            <option value="0">1 / 192</option>
+            <option value="1">48 / 96</option>
+            <option value="2">96 / 97</option>
+          </select></label
+        >
+      </div>
+      <div class="panels">
+        <article>
+          <h2>原始残差</h2>
+          <svg
+            id="raw"
+            viewBox="0 0 360 360"
+            role="img"
+            aria-label="原始坐标中的二维 Gaussian 真值椭圆"
+          ></svg
+          ><output id="readout"></output>
+          <p>原始坐标等比例。切换剂量时，坐标范围保持不变。</p>
+        </article>
+        <article>
+          <h2>用同一真值协方差白化</h2>
+          <svg
+            id="white"
+            viewBox="0 0 360 360"
+            role="img"
+            aria-label="白化坐标中的二维 Gaussian 真值圆"
+          ></svg
+          ><output>90% 二维半径 = 2.146</output>
+          <p>两个白化坐标的方差都为 1。圆描述二维边际的概率区域。</p>
+        </article>
+      </div>
+      <p id="status" role="status"></p>
+      <p>
+        轮廓来自保存的注射因子。这里展示二维边际，192
+        维整体区域需要自己的概率阈值。
+        <a href="#replay-title">看同窗带噪真值与 Fern 样本 ↓</a>
+      </p>
+      <details>
+        <summary>追溯原结果</summary>
+        <p><code id="source"></code></p>
+      </details>
+      <section aria-labelledby="saved-windows-title" style="margin-top: 36px">
+        <p class="tag">SAVED WINDOW SCORES / RMS 0.5</p>
+        <h2 id="saved-windows-title">定位拟合偏差最大的窗口</h2>
+        <p>
+          固定 Home 1517 的 Rössler x 注射实验。三个模型使用同一 seed
+          和同一组测试窗口。这里播放相邻窗口的已存分数；上方真值轮廓的剂量切换独立。
+        </p>
+        <fieldset
+          id="score-controls"
+          disabled
+          style="min-width: 0; border: 1px solid #2c454e; border-radius: 10px"
+        >
+          <legend>逐窗定位</legend>
+          <div class="controls">
+            <label
+              >按模型
+              <select id="score-model"></select
+            ></label>
+            <label
+              >按误差项
+              <select id="score-metric">
+                <option value="forward_kl">Joint KL</option>
+                <option value="mean_kl">均值 KL</option>
+                <option value="covariance_kl">协方差 KL</option>
+              </select></label
+            >
+            <button id="score-peak" type="button">跳到峰值</button>
+            <button id="score-replay" type="button">播放峰值前后 8 窗</button>
+          </div>
+          <label
+            >保存序号
+            <input
+              id="score-window"
+              type="range"
+              min="1"
+              max="3217"
+              value="1"
+              style="width: min(100%, 540px)"
+          /></label>
+          <output id="score-ordinal" for="score-window"></output>
+          <p id="score-peak-ordinal"></p>
+          <svg
+            id="score-trace"
+            viewBox="0 0 730 160"
+            role="img"
+            aria-label="三个模型在相邻测试窗口的已存误差"
+          ></svg>
+          <div style="overflow-x: auto">
+            <table
+              style="
+                border-spacing: 10px;
+                text-align: right;
+                font-variant-numeric: tabular-nums;
+              "
+            >
+              <thead>
+                <tr>
+                  <th scope="col">模型</th>
+                  <th scope="col">Joint KL</th>
+                  <th scope="col">均值 KL</th>
+                  <th scope="col">协方差 KL</th>
+                  <th scope="col">平均方差 / 真值</th>
+                  <th scope="col">Clean MSE</th>
+                </tr>
+              </thead>
+              <tbody id="score-table"></tbody>
+            </table>
+          </div>
+        </fieldset>
+        <p id="score-state" role="status">正在读取已保存的窗口分数…</p>
+        <p>
+          KL 单位为 nats / 192 步窗口。平均方差为预测 covariance trace /
+          192，除以名义真值方差 0.25 raw²。Clean MSE
+          是对干净未来的均方误差，单位为 raw²。协方差 KL
+          包含尺度和结构差异，平均方差描述总体尺度。
+        </p>
+        <details>
+          <summary>逐窗来源</summary>
+          <pre
+            id="score-provenance"
+            style="white-space: pre-wrap; overflow-wrap: anywhere"
+          ></pre>
+        </details>
+      </section>
+      <section aria-labelledby="replay-title" style="margin-top: 36px">
+        <p class="tag">CHECKPOINT REPLAY / RMS 0.5</p>
+        <h2 id="replay-title">同窗对照 · 中心、宽度与方向</h2>
+        <div class="controls">
+          <button
+            class="replay-key"
+            type="button"
+            data-ordinal="1441"
+            aria-pressed="false"
+          >
+            1441 · NLL 总偏差峰值
+          </button>
+          <button
+            class="replay-key"
+            type="button"
+            data-ordinal="1394"
+            aria-pressed="false"
+          >
+            1394 · NLL 协方差峰值
+          </button>
+          <label
+            >预测步对
+            <select id="replay-pair" disabled></select
+          ></label>
+        </div>
+        <p id="replay-state" role="status">正在读取重放结果…</p>
+        <p>
+          绿线是真值的 90% 二维边际，蓝线是 Fern 解析协方差的 90% 二维边际，
+          蓝点是重放的 32 个样本。菱形为重建的带噪真值，黄色表示落在 Fern
+          椭圆内，红色表示落在外。两列都以干净未来为原点，白化列对真值和三个模型使用同一个变换。
+        </p>
+        <p>
+          默认步对 10 / 20 在注射真值中绝对相关最大。预测来自原 checkpoint 在
+          新环境上的固定权重重放。下方椭圆和样本来自这次重放，上方定位用历史分数。
+          两个窗口的 Joint KL 与旧记录最大相差 0.011 nats。
+        </p>
+        <div id="replay-panels"></div>
+      </section>
+    </main>
+    <script type="module" src="./oracle.js"></script>
+    <script type="module" src="./saved-windows.js"></script>
+    <script type="module" src="./replay.js"></script>
+  </body>
+</html>

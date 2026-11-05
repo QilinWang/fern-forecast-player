@@ -1,0 +1,32 @@
+{
+  "schema": "fern.public-explorer.v1",
+  "release": "2026-11-05",
+  "source": "https://github.com/QilinWang/fern-forecast-player",
+  "storage": "Netlify static snapshot",
+  "datasets": {
+    "compare/data.json": {
+      "bytes": 194275,
+      "sha256": "070579a4c6023b903b345fc037cc4b66b1eb1a9252a679b2af0a3b959449a055"
+    },
+    "compare/samples.json": {
+      "bytes": 2868334,
+      "sha256": "c8681e49f4073a812b9622fde55ae66c62564165100990f13fefd57aa2380c62"
+    },
+    "injection/replay-data.json": {
+      "bytes": 37187,
+      "sha256": "59c8dd7f9ad7d666ae84cdb983aef274450d07e4e102da4b6f069431e7d81a9d"
+    },
+    "injection/oracle.json": {
+      "bytes": 1389,
+      "sha256": "79da05705ec83e4666bbc0195fce15b166aa2912d768f630caafae0dd7e9956b"
+    },
+    "injection/window-scores.json": {
+      "bytes": 928143,
+      "sha256": "81bcb7e87cdeae5ff585cdb39ffe01ce857357f58e679bf3b7bed5dfbe23c436"
+    },
+    "shape/results.json": {
+      "bytes": 5017,
+      "sha256": "c5bbad32323cb68cb7ea638845b3994964dcc33b81a6e5aa1fba588d11b1b1e2"
+    }
+  }
+}

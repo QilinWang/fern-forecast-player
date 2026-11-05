@@ -1,0 +1,247 @@
+<!doctype html>
+<html lang="zh-Hans">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width,initial-scale=1" />
+    <title>Fern 研究图谱 · 分布形状</title>
+    <style>
+      :root {
+        color-scheme: dark;
+        font-family: system-ui, sans-serif;
+        background: #08131b;
+        color: #e6f1ef;
+        --ink: #afc3c8;
+        --line: #314a55;
+        --mint: #a3f2ce;
+      }
+      * {
+        box-sizing: border-box;
+      }
+      body {
+        margin: 0;
+      }
+      main {
+        width: min(1040px, calc(100% - 32px));
+        margin: auto;
+        padding: 56px 0;
+      }
+      h1 {
+        font:
+          500 clamp(40px, 7vw, 79px)/1 Georgia,
+          serif;
+        margin: 12px 0 22px;
+      }
+      h2 {
+        margin: 0 0 10px;
+        font-size: 24px;
+      }
+      p {
+        line-height: 1.65;
+        color: var(--ink);
+        margin: 10px 0;
+      }
+      small,
+      .tag {
+        color: var(--mint);
+        letter-spacing: 0.1em;
+      }
+      section {
+        padding: 24px;
+        margin: 24px 0;
+        border: 1px solid var(--line);
+        border-radius: 10px;
+        background: #0e202b;
+      }
+      label {
+        display: inline-grid;
+        gap: 5px;
+        margin: 12px 16px 8px 0;
+        color: var(--ink);
+      }
+      select {
+        padding: 0.55rem;
+        background: #16323f;
+        border: 1px solid #476273;
+        border-radius: 5px;
+        color: #fff;
+        font: inherit;
+      }
+      .chart {
+        display: grid;
+        gap: 16px;
+        margin: 20px 0;
+      }
+      .metric {
+        display: grid;
+        gap: 7px;
+      }
+      .axis {
+        display: grid;
+        grid-template-columns: 115px 1fr 86px;
+        gap: 10px;
+        align-items: center;
+      }
+      .rail {
+        background: #203844;
+        height: 13px;
+        border-radius: 4px;
+        overflow: hidden;
+      }
+      .fill {
+        height: 100%;
+        background: #71b6ed;
+      }
+      .fill.new {
+        background: var(--mint);
+      }
+      .axis strong {
+        text-align: right;
+        font-variant-numeric: tabular-nums;
+      }
+      .source {
+        font-size: 13px;
+        overflow-wrap: anywhere;
+      }
+      .nuplot {
+        position: relative;
+        height: 15px;
+        background: #203844;
+        border-radius: 4px;
+      }
+      .truthline {
+        position: absolute;
+        left: 83.333%;
+        top: 0;
+        bottom: 0;
+        width: 2px;
+        background: #ffba7a;
+      }
+      .nuDot {
+        position: absolute;
+        top: 2px;
+        width: 11px;
+        height: 11px;
+        border-radius: 50%;
+        background: var(--mint);
+        transform: translateX(-50%);
+      }
+      .nurow {
+        padding: 10px 0;
+        border-bottom: 1px solid var(--line);
+      }
+      .nurow span {
+        color: var(--ink);
+        font-size: 13px;
+      }
+      .notice {
+        border-left: 2px solid #ffba7a;
+        padding-left: 12px;
+      }
+      .key {
+        font-size: 13px;
+        color: #ffba7a;
+      }
+      @media (max-width: 500px) {
+        section {
+          padding: 17px;
+        }
+        .axis {
+          grid-template-columns: 87px 1fr 73px;
+          font-size: 12px;
+        }
+      }
+    </style>
+  </head>
+  <body>
+    <main>
+      <nav
+        style="
+          display: flex;
+          gap: 1rem;
+          flex-wrap: wrap;
+          margin-bottom: 1rem;
+          font: 600 14px system-ui;
+        "
+      >
+        <a href="/">Forecast player</a><a href="/compare/">Seed comparison</a
+        ><a href="/injection/">Gaussian injection</a
+        ><a href="/shape/">Radial / angular / Student-W</a>
+      </nav>
+
+      <span class="tag">FERN RESEARCH EXPLORER / SAVED RESULTS</span>
+      <h1>分布形状怎么变？</h1>
+      <p>
+        <a href="/compare/" style="color: var(--mint)"
+          >打开 Lorenz 同步播放器 · Huber / NLL＋Huber / NLL ↗</a
+        >
+      </p>
+      <p>
+        比较形状模块的评分和 Student‑W 学到的自由度。首批读数来自已有 Rössler
+        实验报告。
+      </p>
+      <section aria-labelledby="shape-title">
+        <h2 id="shape-title">01 · 加一个形状模块，结果怎么变</h2>
+        <p>
+          <strong>Radial</strong> 改变 source 离中心多远。<strong
+            >Angular</strong
+          >
+          改变 source 更往哪些方向。这里一条向量是 Rössler x 的 192
+          步未来，方向是 192 维时间向量的方向。
+        </p>
+        <p>
+          目标是加 Student‑t₄ 噪声的 raw Rössler x，剂量 0.5，历史/预测各 192
+          步，3,217 个测试窗口，按 validation NLL
+          选模。每次比较仅使用两边都完成的同一批模型 seed。
+        </p>
+        <label
+          >形状模块
+          <select id="shape">
+            <option value="radial">Radial</option>
+            <option value="angular">Angular</option>
+            <option value="radial+angular">Radial + angular</option>
+          </select></label
+        >
+        <label
+          >训练接法
+          <select id="route"></select
+        ></label>
+        <div id="shape-result" class="chart" aria-live="polite"></div>
+        <p class="notice">
+          配对种子数因缺失或失败而变。组合结构在「乘 G +
+          截断特征」的一次完成运行中出现严重退化，保留在平均值里。现有报告没有直接的半径或方向恢复读数。
+        </p>
+        <details>
+          <summary>数据出处</summary>
+          <p id="shape-source" class="source"></p>
+        </details>
+      </section>
+      <section aria-labelledby="student-title">
+        <h2 id="student-title">02 · Student‑W 学到了多重的尾巴</h2>
+        <p>
+          这组实验每个窗口共享一个随机缩放 W。对称 Student‑t 的 ν
+          越小，尾巴越重；橙线是注入目标的 ν*=15。这里用所选 checkpoint
+          在测试窗口上的 ν 中位数。
+        </p>
+        <label
+          >协方差结构
+          <select id="cov">
+            <option value="diagonal">Diagonal</option>
+            <option value="Householder">Householder</option>
+          </select></label
+        >
+        <p class="key">橙线 ν*=15 · 横轴 0–18 · 绿色点为测试 ν 中位数</p>
+        <div id="nu-result" aria-live="polite"></div>
+        <p class="notice">
+          独立实验。Raw Rössler x，历史/预测各 192 步，3,217 个测试窗口，exact
+          NLL，模型 seed 1070543525，每配置一次训练，patience 5。后续另有第二个
+          seed、patience 20 和随窗口变化的 ν，需分开看。
+        </p>
+        <details>
+          <summary>数据出处</summary>
+          <p id="student-source" class="source"></p>
+        </details>
+      </section>
+    </main>
+    <script type="module" src="./atlas.js"></script>
+  </body>
+</html>

@@ -1,0 +1,127 @@
+<!doctype html>
+<html lang="zh-Hans">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>Fern · Lorenz 双 seed 同步播放器</title>
+    <link rel="stylesheet" href="./player.css" />
+  </head>
+  <body>
+    <main>
+      <nav
+        style="
+          display: flex;
+          gap: 1rem;
+          flex-wrap: wrap;
+          margin-bottom: 1rem;
+          font: 600 14px system-ui;
+        "
+      >
+        <a href="/">Forecast player</a><a href="/compare/">Seed comparison</a
+        ><a href="/injection/">Gaussian injection</a
+        ><a href="/shape/">Radial / angular / Student-W</a>
+      </nav>
+
+      <nav>
+        <a href="/">← 原始预测播放器</a>
+        <a href="/injection/">Gaussian 注射图谱 ↗</a>
+      </nav>
+      <header>
+        <p class="tag">FERN RESEARCH EXPLORER · LORENZ‑63 · TEST (0, 1608)</p>
+        <h1>同一段 Lorenz，两种 seed</h1>
+        <p>
+          四种训练，八条预测，锁定同一真值、时间游标和纵轴。白线是真值，彩线是解析中心，阴影是对应坐标的
+          90% 区间。
+        </p>
+      </header>
+      <section class="transport" aria-label="同步播放控制">
+        <fieldset id="controls" disabled>
+          <div class="controls">
+            <button id="previous" type="button" aria-label="上一步">−1</button>
+            <button id="play" type="button">▶ 播放</button>
+            <button id="next" type="button" aria-label="下一步">+1</button>
+            <label
+              >坐标
+              <select id="axis">
+                <option>x</option>
+                <option>y</option>
+                <option>z</option>
+              </select></label
+            >
+            <label for="step" class="step-label">预测步</label>
+            <input id="step" type="range" min="1" max="192" value="1" />
+            <output id="cursor" for="step">1 / 192</output>
+          </div>
+          <div class="controls">
+            <button id="max-split" type="button">最大跨 seed 分侧</button>
+            <button id="max-error" type="button">最大三维误差</button>
+            <label class="event-picker"
+              >定位
+              <select id="events"></select
+            ></label>
+            <button id="replay" type="button">播放峰值前后 8 步</button>
+          </div>
+          <div class="controls" aria-label="样本观察时刻">
+            <button type="button" data-sample-step="35">第 35 步</button>
+            <button type="button" data-sample-step="46">第 46 步</button>
+            <button type="button" data-sample-step="64">第 64 步</button>
+          </div>
+        </fieldset>
+        <p id="event-detail" class="muted"></p>
+        <p id="current-truth" class="muted"></p>
+      </section>
+      <p id="status" role="status">读取八份已保存的解析预测…</p>
+      <section id="sample-view" aria-labelledby="samples-title">
+        <h2 id="samples-title">32 条预测轨迹 · 双 seed 三维视角</h2>
+        <fieldset id="sample-controls" disabled>
+          <div class="controls">
+            <label
+              >训练设置
+              <select id="sample-model"></select
+            ></label>
+            <button id="sample-left" type="button">向左旋转</button>
+            <button id="sample-right" type="button">向右旋转</button>
+            <button id="sample-reset" type="button">重置视角</button>
+          </div>
+        </fieldset>
+        <p id="sample-status" role="status">读取已保存的样本…</p>
+        <p class="muted">
+          拖任一面板，两边一起转动。半透明面是
+          x=0，白色菱形是真值，金色十字是解析中心。
+          <span class="negative">蓝点为 x&lt;0</span>，<span class="positive"
+            >橙点为 x&gt;0</span
+          >，灰点在零点。短线是同一条样本在当前步及此前最多 8
+          步的轨迹，颜色按该样本当前步判定。
+        </p>
+        <div id="sample-panels"></div>
+        <p class="muted"><a href="#matrix">跳到解析中心、区间与误差 ↘</a></p>
+      </section>
+      <div id="matrix" class="matrix"></div>
+      <details>
+        <summary>事件与指标怎么读</summary>
+        <p>
+          分侧按两个 seed 的解析中心 x
+          严格异号判定，零点不算异号。连续异号步合为一个片段，片段峰值取两中心 x
+          差最大的步。x 是洛伦兹吸引子两侧的直观代理。
+        </p>
+        <p>
+          每个模型和 seed
+          各列一个三维误差峰值，按解析均值到真值的欧氏距离计算。卡片同时显示所选坐标上的绝对误差、区间宽度和真值覆盖。区间为解析
+          Gaussian 边际 90%，覆盖采用闭区间。Huber 的尺度头未拟合，soft-clip
+          也改变了尺度参数化。
+        </p>
+        <p>
+          数据来自 Study 456 与 457 的已保存 checkpoint 重放结果。两个 seed
+          的窗口输入和真值相同。本页面读取已有均值和标准差，所有指标使用 Lorenz
+          原始单位。
+        </p>
+        <p>
+          这组模型分别建模 x、y、z。三维视图按保存的样本索引把三个坐标配在一起，
+          侧别直接按原始 x 计算。两边都有样本表示跨过了
+          x=0，侧别本身只描述这个坐标。
+        </p>
+      </details>
+    </main>
+    <script type="module" src="./player.js"></script>
+  </body>
+</html>
